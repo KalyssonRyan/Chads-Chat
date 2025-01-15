@@ -11,8 +11,20 @@
         p { margin: 5px 0; }
     </style>
     <script>
+        // Função para obter o nome de usuário
+        function getUsername() {
+            let username = localStorage.getItem("username"); // Tenta pegar o nome do localStorage
+            if (!username) {
+                // Se o nome não estiver armazenado, pede para o usuário digitar
+                username = prompt("Qual é o seu nome?");
+                localStorage.setItem("username", username); // Armazena o nome no localStorage
+            }
+            return username;
+        }
+
+        // Função para enviar a mensagem
         async function sendMessage() {
-            const user = document.getElementById("username").value;
+            const user = getUsername(); // Pega o nome do usuário
             const message = document.getElementById("message").value;
 
             // Envia a mensagem para o servidor
@@ -27,6 +39,7 @@
             loadMessages();
         }
 
+        // Função para carregar as mensagens
         async function loadMessages() {
             const response = await fetch("/api/chat/messages");
             const messages = await response.json();
@@ -44,6 +57,7 @@
             });
         }
 
+        // Intervalo para atualizar as mensagens
         setInterval(loadMessages, 1000); // Atualiza mensagens a cada 1 segundo
     </script>
 </head>
@@ -51,7 +65,6 @@
 <h1>Chat com RMI</h1>
 <div id="chat"></div>
 <div id="inputArea">
-    <input type="text" id="username" placeholder="Seu nome">
     <input type="text" id="message" placeholder="Sua mensagem">
     <button onclick="sendMessage()">Enviar</button>
 </div>
