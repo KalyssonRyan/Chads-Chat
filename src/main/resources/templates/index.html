@@ -9,6 +9,7 @@
         #chat { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; white-space: pre-wrap; }
         #inputArea { margin-top: 10px; }
         p { margin: 5px 0; }
+
     </style>
     <script>
         // Função para obter o nome de usuário
@@ -52,6 +53,7 @@
             // Adiciona cada mensagem como uma nova linha
             messages.forEach(msg => {
                 const p = document.createElement("p");
+                p.classList.add()
                 p.textContent = msg; // Adiciona o texto da mensagem dentro de um <p>
                 chatBox.appendChild(p);
             });
