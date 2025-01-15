@@ -1,133 +1,59 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat WebSocket</title>
+    <title>Chat com RMI</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #f5f5f5;
-        }
-        #chat-box {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
-        }
-        #input-box {
-            display: flex;
-            padding: 10px;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
-        }
-        #input-box input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        #input-box button {
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        #name-input-box {
-            display: flex;
-            padding: 10px;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
-        }
-        #name-input-box input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        #name-input-box button {
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; }
+        #chat { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; white-space: pre-wrap; }
+        #inputArea { margin-top: 10px; }
+        p { margin: 5px 0; }
     </style>
+    <script>
+        async function sendMessage() {
+            const user = document.getElementById("username").value;
+            const message = document.getElementById("message").value;
+
+            // Envia a mensagem para o servidor
+            await fetch("/api/chat/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `user=${user}&message=${message}`
+            });
+
+            // Limpa o campo de mensagem e recarrega as mensagens
+            document.getElementById("message").value = "";
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            const response = await fetch("/api/chat/messages");
+            const messages = await response.json();
+
+            const chatBox = document.getElementById("chat");
+
+            // Limpa as mensagens anteriores para evitar duplicação
+            chatBox.innerHTML = '';
+
+            // Adiciona cada mensagem como uma nova linha
+            messages.forEach(msg => {
+                const p = document.createElement("p");
+                p.textContent = msg; // Adiciona o texto da mensagem dentro de um <p>
+                chatBox.appendChild(p);
+            });
+        }
+
+        setInterval(loadMessages, 1000); // Atualiza mensagens a cada 1 segundo
+    </script>
 </head>
 <body>
-<div id="name-input-box">
-    <input type="text" id="username-input" placeholder="Digite seu nome...">
-    <button onclick="enterChat()">Entrar</button>
-</div>
-
-<div id="chat-box" style="display:none;"></div>
-<div id="input-box" style="display:none;">
-    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+<h1>Chat com RMI</h1>
+<div id="chat"></div>
+<div id="inputArea">
+    <input type="text" id="username" placeholder="Seu nome">
+    <input type="text" id="message" placeholder="Sua mensagem">
     <button onclick="sendMessage()">Enviar</button>
 </div>
-
-<script>
-    let socket;
-    let username;
-
-    // Função chamada ao clicar em "Entrar"
-    function enterChat() {
-        username = document.getElementById('username-input').value.trim();
-
-        if (username) {
-            // Esconde a tela de nome e mostra o chat
-            document.getElementById('name-input-box').style.display = 'none';
-            document.getElementById('chat-box').style.display = 'block';
-            document.getElementById('input-box').style.display = 'flex';
-
-            // Conecta ao WebSocket com a URL correta
-            socket = new WebSocket('ws://localhost:8080/chat'); // Ajuste o URL conforme necessário
-
-            // Quando o WebSocket abrir, envia a mensagem de boas-vindas
-            socket.onopen = function() {
-                socket.send(username + " entrou no chat.");  // Envia o nome ao invés do UUID
-            };
-
-            // Recebe as mensagens do WebSocket
-            socket.onmessage = function(event) {
-                const chatBox = document.getElementById('chat-box');
-                const message = event.data;
-
-                // Adiciona a nova mensagem ao chat
-                const messageElement = document.createElement('div');
-                messageElement.textContent = message;
-                chatBox.appendChild(messageElement);
-
-                // Faz o scroll até a última mensagem
-                chatBox.scrollTop = chatBox.scrollHeight;
-            };
-        } else {
-            alert("Por favor, insira um nome de usuário!");
-        }
-    }
-
-    // Envia a mensagem através do WebSocket
-    function sendMessage() {
-        const messageInput = document.getElementById('message-input');
-        const message = messageInput.value.trim();
-
-        if (message) {
-            // Envia a mensagem para o WebSocket com o nome do usuário
-            socket.send(username + ": " + message); // Prefixa a mensagem com o nome do usuário
-
-            // Limpa o campo de entrada
-            messageInput.value = '';
-        }
-    }
-</script>
 </body>
 </html>
